@@ -14,6 +14,8 @@ endif()
 find_package(ament_cmake REQUIRED) # ROS2 build tool
 find_package(rclcpp REQUIRED)      # ROS2 C++ package
 find_package(std_msgs REQUIRED)    # YOU ARE ONLY ADDING THIS TO THE FILE
+find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
  
 # Compiles source files into a library
 # A library is not executed, instead other executables can link
@@ -21,7 +23,8 @@ find_package(std_msgs REQUIRED)    # YOU ARE ONLY ADDING THIS TO THE FILE
 # We build a library so that the methods defined can be used by
 # both the unit test and ROS2 node executables.
 add_library(costmap_lib
-  src/costmap_core.cpp)
+  src/costmap_core.cpp
+  src/costmap_node.cpp)
 # Indicate to compiler where to search for header files
 target_include_directories(costmap_lib
   PUBLIC include)
@@ -29,6 +32,8 @@ target_include_directories(costmap_lib
 ament_target_dependencies(costmap_lib 
   rclcpp
   std_msgs # YOU ARE ONLY ADDING THIS TO THE FILE
+  nav_msgs
+  sensor_msgs
 )
  
 # Create ROS2 node executable from source files
