@@ -9,19 +9,19 @@
 CostmapNode::CostmapNode()
 : Node("costmap_node"),
   costmap_(this->get_logger()),
-  resolution_(0.05),
-  width_(100),
-  height_(100),
-  origin_x_(0.0),
-  origin_y_(0.0),
-  inflation_radius_(0.3),
+  resolution_(0.1),
+  width_(1000),
+  height_(1000),
+  origin_x_(-50),
+  origin_y_(-50),
+  inflation_radius_(1),
   max_cost_(100)
 {
     // Create subscription with correct type
     laser_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/lidar", 10, std::bind(&CostmapNode::laserCallback, this, std::placeholders::_1));
+        "lidar", 10, std::bind(&CostmapNode::laserCallback, this, std::placeholders::_1));
     
-    costmap_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/costmap", 10);
+    costmap_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("costmap", 10);
     
     
     this->declare_parameter("inflation_radius", inflation_radius_);
@@ -101,7 +101,7 @@ void CostmapNode::laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr sca
         float angle = scan->angle_min + i * scan->angle_increment;
         float range = scan->ranges[i];
         
-        if (std::isnormal(range)) {
+        if (range < scan->range_max && range > scan->range_min) {
             int x, y;
             convertToGrid(range, angle, x, y);
             markObstacle(x, y);
@@ -109,37 +109,37 @@ void CostmapNode::laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr sca
     }
     
     inflateObstacles();
-    RCLCPP_INFO(this->get_logger(), "blaj blaj dfs");
-    publishCostmap();
+    //RCLCPP_INFO(this->get_logger(), "blaj blaj dfs");
+    publishCostmap(scan);
 }
 
-void CostmapNode::publishCostmap()
+void CostmapNode::publishCostmap(const sensor_msgs::msg::LaserScan::SharedPtr scan)
 {
-    // nav_msgs::msg::OccupancyGrid costmapmsg;
-    // const auto& grid = costmap_.getGrid();
+    nav_msgs::msg::OccupancyGrid costmapmsg;
+    const auto& grid = costmap_.getGrid();
     
-    // costmapmsg.header.stamp = this->now();
-    // costmapmsg.header.frame_id = "lidar";
+    costmapmsg.header = scan->header;
+ 
     
-    // costmapmsg.info.resolution = resolution_;
-    // costmapmsg.info.width = width_;
-    // costmapmsg.info.height = height_;
-    // costmapmsg.info.origin.position.x = origin_x_;
-    // costmapmsg.info.origin.position.y = origin_y_;
-    // costmapmsg.info.origin.orientation.w = 1.0;
+    costmapmsg.info.resolution = resolution_;
+    costmapmsg.info.width = width_;
+    costmapmsg.info.height = height_;
+    costmapmsg.info.origin.position.x = origin_x_;
+    costmapmsg.info.origin.position.y = origin_y_;
+    costmapmsg.info.origin.orientation.w = 1.0;
     
-    // costmapmsg.data.resize(width_ * height_);
-    // for (int y = 0; y < height_; ++y) {
-    //     for (int x = 0; x < width_; ++x) {
-    //       costmapmsg.data[y * width_ + x] = grid[y][x];
-    //     }
-    // }
+    costmapmsg.data.resize(width_ * height_);
+    for (int y = 0; y < height_; ++y) {
+        for (int x = 0; x < width_; ++x) {
+          costmapmsg.data[y * width_ + x] = grid[y][x];
+        }
+    }
     
-    // costmap_pub_->publish(costmapmsg);
-    nav_msgs::msg::OccupancyGrid test_msg;
-    test_msg.data = {0};  // Simple test message
-    costmap_pub_->publish(test_msg);
-    RCLCPP_INFO(this->get_logger(), "Published test message");
+    costmap_pub_->publish(costmapmsg);
+    // nav_msgs::msg::OccupancyGrid test_msg;
+    // test_msg.data = {0};  // Simple test message
+    // costmap_pub_->publish(test_msg);
+    // RCLCPP_INFO(this->get_logger(), "Published test message");
 
   }
 

@@ -12,7 +12,7 @@ public:
     
     // Callback functions
     void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
-    void publishCostmap();
+    void publishCostmap(const sensor_msgs::msg::LaserScan::SharedPtr scan);
 
     // Costmap operations
     void initializeCostmap();
