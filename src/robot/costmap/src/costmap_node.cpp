@@ -37,9 +37,9 @@ void CostmapNode::initializeCostmap()
 {
     costmap_.initialize(width_, height_, 0);
     
-    RCLCPP_INFO(this->get_logger(), 
-        "Initialized costmap with size %dx%d (resolution: %.2f m/cell)",
-        width_, height_, resolution_);
+    // RCLCPP_INFO(this->get_logger(), 
+    //     "Initialized costmap with size %dx%d (resolution: %.2f m/cell)",
+    //     width_, height_, resolution_);
 }
 
 void CostmapNode::convertToGrid(float range, float angle, int& x_grid, int& y_grid) const
